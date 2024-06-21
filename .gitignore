@@ -2,3 +2,4 @@ wandb/
 data/
 __pycache__/
 model_registry/
+.DS_Store
