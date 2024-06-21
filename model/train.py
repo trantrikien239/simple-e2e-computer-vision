@@ -15,7 +15,7 @@ import wandb
 
 @dataclass
 class Config:
-    batch_size: int = 128
+    batch_size: int = 512
     learning_rate: float = 0.001
     epochs: int = 10
     weight_decay: float = 0.01
@@ -91,7 +91,13 @@ if __name__ == '__main__':
     trainer.train()
 
     save_path = f"model_registry/{current_ts}"
+    save_path_latest = "model_registry/latest"
     os.makedirs(save_path, exist_ok=True)
+    os.makedirs(save_path_latest, exist_ok=True)
 
-    torch.save(trainer.model.state_dict(), f'{save_path}/model.pth')
-    trainer.wandb.save('model.pth')
+    scripted_model = torch.jit.script(trainer.model)
+    torch.jit.save(scripted_model, f'{save_path}/scripted_model.pt')
+    torch.jit.save(scripted_model, f'{save_path_latest}/scripted_model.pt')
+    print(f'Model saved at {save_path}')
+    # Save the model to W&B
+    trainer.wandb.save(f'{save_path}/scripted_model.pt')
