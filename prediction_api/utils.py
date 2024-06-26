@@ -16,13 +16,13 @@ def get_device():
     else:
         return torch.device('cpu')
 
-def load_model(model_path, device):
+async def load_model(model_path, device):
     model = torch.jit.load(model_path)
     model = model.to(device)
     model.eval()
     return model
 
-def get_image_transform():
+async def get_image_transform():
     return transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
@@ -37,7 +37,7 @@ def decode_image(image_base64):
     image_data = base64.b64decode(image_base64)
     return Image.open(io.BytesIO(image_data)).convert('L')
 
-async def classify_image(image, model, transform, device):
+def classify_image(image, model, transform, device):
     image = transform(image)
     image = image.unsqueeze(0).to(device)
     with torch.no_grad():

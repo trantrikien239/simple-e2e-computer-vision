@@ -1,22 +1,48 @@
 import os
-import base64
-import io
 import time
 from fastapi import FastAPI, HTTPException, Request
-from PIL import Image
-import torch
+from contextlib import asynccontextmanager
+import asyncio
 
 from .utils import ImageData
 from .utils import get_device, load_model, get_image_transform
 from .utils import decode_image, classify_image
 
-app = FastAPI()
+class AppState:
+    def __init__(self):
+        self.model_path = None
+        self.device = None
+        self.model = None
+        self.image_transform = None
 
-device = get_device()
+app_state = AppState()
 
-model_path = os.environ.get("MODEL_PATH", "model.pth")
-model = load_model(model_path, device)
-image_transform = get_image_transform()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Start up
+    app_state.model_path = os.environ.get("MODEL_PATH", "model.pth")
+    app_state.device = get_device()
+
+    # Gather asynchronous tasks
+    model_task = asyncio.create_task(
+        load_model(
+            app_state.model_path, 
+            app_state.device
+            )
+        )
+    transform_task = asyncio.create_task(get_image_transform())
+    # Wait for the tasks to complete
+    app_state.model, app_state.image_transform = \
+        await asyncio.gather(model_task, transform_task)
+    
+    yield
+    # Shut down
+    del app_state.model_path
+    del app_state.device
+    del app_state.model
+    del app_state.image_transform
+
+app = FastAPI(lifespan=lifespan)
 
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
@@ -30,7 +56,12 @@ async def add_process_time_header(request: Request, call_next):
 async def predict(data: ImageData):
     try:
         image = decode_image(data.image)
-        prediction = await classify_image(image, model, image_transform, device)
+        prediction = classify_image(
+            image,
+            app_state.model,
+            app_state.image_transform,
+            app_state.device
+            )
         return {"prediction": prediction}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
