@@ -27,12 +27,17 @@ if uploaded_file is not None:
         "Content-Type": "application/json",
     }
     data = {
-        "image": image_base64
+        "image": image_base64,
+        "name": uploaded_file.name
     }
     response = requests.post(url, headers=headers, data=json.dumps(data))
+    # Show the data sent to the API, make it collapsible
+    with st.expander("Show data sent to Prediction API"):
+        st.code(data)
     prediction = response.json()['prediction']
 
     # Display the prediction
     st.write(f'Prediction: {prediction}')
-
-
+    
+    # Display the response time
+    st.code(f'Response time: {response.elapsed.total_seconds()} seconds')

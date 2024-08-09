@@ -32,6 +32,9 @@ async def get_image_transform():
 class ImageData(BaseModel):
     image: str
 
+class ImageDataBatch(BaseModel):
+    images: list
+
 
 def decode_image(image_base64):
     image_data = base64.b64decode(image_base64)
