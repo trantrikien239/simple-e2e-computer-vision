@@ -9,7 +9,7 @@ SHOW_IMAGES = False
 SAVE_IMAGES = True
 BRIGHTNESS_INCREASE = 50
 NOISE_MEAN = 0
-NOISE_STD = 25  # Standard deviation of noise
+NOISE_STD = 75  # Standard deviation of noise
 
 def add_noise(image):
     image_array = np.array(image).astype(np.int16)

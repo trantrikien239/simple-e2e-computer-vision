@@ -18,6 +18,15 @@ Assuming the prototype helps us get the green-light to move the project forward,
 
 We can prepare test sets for 3 hypothetical edge cases (potentially out-of-distribution test data):
 - Unbalanced class: One class is much less prevalance than others
-- Noisy images: Input has additional 10 to 50 noisy pixels
+- Noisy images: Input has additional Gaussian noise with an std of 50 pixel brightness
 - Images too bright: Input has increased brightness
 
+## 20240812
+
+Currently, the test cases are completed: 
+- 3 test dataset, each with 1000 images
+- Batch evaluation front-end with basic classification report
+- Batch prediction back-end
+- Pytest test cases used to test model accuracy
+
+Now we can move on to step 2: Set up model lifecycle
