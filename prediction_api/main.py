@@ -4,9 +4,9 @@ from fastapi import FastAPI, HTTPException, Request
 from contextlib import asynccontextmanager
 import asyncio
 
-from .utils import ImageData
-from .utils import get_device, load_model, get_image_transform
-from .utils import decode_image, classify_image
+from utils import ImageData, ImageDataBatch
+from utils import get_device, load_model, get_image_transform
+from utils import decode_image, classify_image
 
 class AppState:
     def __init__(self):
@@ -15,25 +15,24 @@ class AppState:
         self.model = None
         self.image_transform = None
 
-app_state = AppState()
+async def initialize_app_state() -> AppState:
+    # Get resources
+    app_state.model_path = os.environ.get("MODEL_PATH", "model.pth")
+    app_state.device = get_device()
+    # Load model and image transform
+    model_task = asyncio.create_task(
+        load_model(app_state.model_path, app_state.device)
+    )
+    transform_task = asyncio.create_task(get_image_transform())
+    app_state.model, app_state.image_transform = await asyncio.gather(
+        model_task, transform_task
+    )
+    return app_state
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Start up
-    app_state.model_path = os.environ.get("MODEL_PATH", "model.pth")
-    app_state.device = get_device()
-
-    # Gather asynchronous tasks
-    model_task = asyncio.create_task(
-        load_model(
-            app_state.model_path, 
-            app_state.device
-            )
-        )
-    transform_task = asyncio.create_task(get_image_transform())
-    # Wait for the tasks to complete
-    app_state.model, app_state.image_transform = \
-        await asyncio.gather(model_task, transform_task)
+    app_state = await initialize_app_state()
     
     yield
     # Shut down
@@ -41,6 +40,8 @@ async def lifespan(app: FastAPI):
     del app_state.device
     del app_state.model
     del app_state.image_transform
+
+app_state = AppState()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -63,5 +64,19 @@ async def predict(data: ImageData):
             app_state.device
             )
         return {"prediction": prediction}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@app.post("/predict_batch/")
+async def predict_batch(data: ImageDataBatch):
+    try:
+        predictions = [(
+            datum["name"], 
+            classify_image(decode_image(datum["image"]),
+                            app_state.model,
+                            app_state.image_transform,
+                            app_state.device)
+            ) for datum in data.images]
+        return {"prediction": predictions}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

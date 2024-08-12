@@ -17,7 +17,14 @@ The API is designed to make predictions using a pre-trained model. FastAPI is us
 - `main.py`: This is the main FastAPI application file where the API endpoints are defined.
 - `Dockerfile`: This file is used by Docker to build a Docker image of the application.
 
-## Usage
+## Run the server
+
+```bash
+export MODEL_PATH=../model_registry/latest/scripted_model.pt
+uvicorn prediction_api.main:app --reload
+```
+
+## Build with Docker
 
 1. Build the Docker image:
 ```bash
