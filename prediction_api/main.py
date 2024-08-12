@@ -15,25 +15,24 @@ class AppState:
         self.model = None
         self.image_transform = None
 
-app_state = AppState()
+async def initialize_app_state() -> AppState:
+    # Get resources
+    app_state.model_path = os.environ.get("MODEL_PATH", "model.pth")
+    app_state.device = get_device()
+    # Load model and image transform
+    model_task = asyncio.create_task(
+        load_model(app_state.model_path, app_state.device)
+    )
+    transform_task = asyncio.create_task(get_image_transform())
+    app_state.model, app_state.image_transform = await asyncio.gather(
+        model_task, transform_task
+    )
+    return app_state
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Start up
-    app_state.model_path = os.environ.get("MODEL_PATH", "model.pth")
-    app_state.device = get_device()
-
-    # Gather asynchronous tasks
-    model_task = asyncio.create_task(
-        load_model(
-            app_state.model_path, 
-            app_state.device
-            )
-        )
-    transform_task = asyncio.create_task(get_image_transform())
-    # Wait for the tasks to complete
-    app_state.model, app_state.image_transform = \
-        await asyncio.gather(model_task, transform_task)
+    app_state = await initialize_app_state()
     
     yield
     # Shut down
@@ -41,6 +40,8 @@ async def lifespan(app: FastAPI):
     del app_state.device
     del app_state.model
     del app_state.image_transform
+
+app_state = AppState()
 
 app = FastAPI(lifespan=lifespan)
 
