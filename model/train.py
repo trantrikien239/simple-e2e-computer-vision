@@ -9,8 +9,12 @@ from dataclasses import dataclass
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torchvision import transforms
+from torchvision.transforms import v2
+
 from mnist_cnn import MnistMLP
-from mnist_dataset import get_mnist_data_loader
+from mnist_dataset import get_mnist_data_loader, \
+    get_data_loader_from_image_folder, GaussianNoise
 import wandb
 
 @dataclass
@@ -19,13 +23,18 @@ class Config:
     learning_rate: float = 0.001
     epochs: int = 10
     weight_decay: float = 0.01
+    augmentations: list = None
 
     def to_dict(self):
         return self.__dict__
+    
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
 
 class Trainer:
-    def __init__(self, config):
+    def __init__(self, config, eval_sets=None):
         self.config = config
         if torch.cuda.is_available():
             self.device = torch.device('cuda')
@@ -34,13 +43,18 @@ class Trainer:
         else:
             self.device = torch.device('cpu')
         self.model = MnistMLP().to(self.device)
-        self.train_loader, self.test_loader = get_mnist_data_loader(self.config['batch_size'])
+        self.train_loader, self.test_loader = get_mnist_data_loader(
+            self.config['batch_size'], augmentations=self.config['augmentations'])
+        if eval_sets is None:
+            self.eval_sets = {'test_normal_all': self.test_loader}
+        else:
+            self.eval_sets = eval_sets
         self.optimizer = optim.Adam(
             self.model.parameters(), 
             lr=self.config['learning_rate'])
         self.criterion = nn.CrossEntropyLoss()
         self.wandb = wandb
-        self.wandb.init(project='mnist-classifier', config=self.config)
+        self.wandb.init(project='mnist-classifier-p2', config=self.config)
         self.wandb.watch(self.model)
         
     def train(self):
@@ -61,28 +75,46 @@ class Trainer:
             train_loss /= len(self.train_loader.dataset)
             train_accuracy = train_correct / len(self.train_loader.dataset)
             self.wandb.log({'train_loss': train_loss, 'train_accuracy': train_accuracy})
+            print(f'Epoch {epoch + 1}/{self.config["epochs"]}, '
+                  f'Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.4f}, ')
             
-            self.model.eval()
-            test_loss = 0
-            test_correct = 0
+            self.evaluate()
+            
+    def evaluate(self):
+        self.model.eval()
+
+        for name, eval_set in self.eval_sets.items():
+            eval_loss = 0
+            eval_correct = 0
             with torch.no_grad():
-                for data, target in self.test_loader:
+                for data, target in eval_set:
                     data, target = data.to(self.device), target.to(self.device)
                     output = self.model(data)
-                    test_loss += self.criterion(output, target).item()
+                    eval_loss += self.criterion(output, target).item()
                     pred = output.argmax(dim=1, keepdim=True)
-                    test_correct += pred.eq(target.view_as(pred)).sum().item()
-            test_loss /= len(self.test_loader.dataset)
-            test_accuracy = test_correct / len(self.test_loader.dataset)
-            self.wandb.log({'test_loss': test_loss, 'test_accuracy': test_accuracy})
-            
-            print(f'Epoch {epoch + 1}/{self.config["epochs"]}, '
-                  f'Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.4f}, '
-                  f'Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}')
+                    eval_correct += pred.eq(target.view_as(pred)).sum().item()
+            eval_loss /= len(eval_set.dataset)
+            eval_accuracy = eval_correct / len(eval_set.dataset)
+            self.wandb.log({f'{name}_loss': eval_loss, f'{name}_accuracy': eval_accuracy})
+            print(f'{name} Loss: {eval_loss:.4f}, {name} Accuracy: {eval_accuracy:.4f}')
+        
             
 if __name__ == '__main__':
     config = Config()
-    trainer = Trainer(config.to_dict())
+    eval_sets = {
+        name: get_data_loader_from_image_folder(
+            config.batch_size, f'data/MNIST/images/test-sample-1000-seed-42-folders/{name}')
+        for name in ['normal', 'noisy', 'bright']
+    }
+
+    config.update(augmentations=[
+        transforms.RandomApply(torch.nn.ModuleList([
+            GaussianNoise(mean=0, sigma=0.1, clip=True)
+        ]), p=0.3)
+    ])
+
+    trainer = Trainer(config.to_dict(), eval_sets=eval_sets)
+    
     print(f'Model: {trainer.model.__class__.__name__}. Size: {trainer.model.count_parameters()}')
     
     current_ts = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")

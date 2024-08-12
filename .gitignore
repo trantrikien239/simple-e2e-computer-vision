@@ -1,5 +1,8 @@
 wandb/
 data/MNIST/
 __pycache__/
-model_registry/
+
+model_registry/*
+!model_registry/production/
+
 .DS_Store

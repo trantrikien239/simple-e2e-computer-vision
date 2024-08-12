@@ -30,3 +30,10 @@ Currently, the test cases are completed:
 - Pytest test cases used to test model accuracy
 
 Now we can move on to step 2: Set up model lifecycle
+
+After consideration, I think the current implementation that uses Weight and Biases API is already quite good. It allows performance comparison between different runs and also system information such as disk utilization and CPU in use.
+
+Today I worked on:
+- Training a new model with data with randomized data augmentation, which involved modifying the dataset classes and modify the training routine to allow evaluation on multiple test datasets. As a result, the model gained performance significantly on the noisy and brighten images.
+- Update the testcase and make data available in the repo so that CI/CD can be implemented later.
+- Embed W&B dashboard into the Streamlit UI
