@@ -22,15 +22,15 @@ def test_image_transform_loaded():
 
 @pytest.mark.parametrize(
     "test_set, accuracy", [
-        ("../data/MNIST/images/test-sample-1000-seed-42/normal", 0.98),
-        ("../data/MNIST/images/test-sample-1000-seed-42/normal", 0.95),
-        ("../data/MNIST/images/test-sample-1000-seed-42/normal", 0.90),
-        ("../data/MNIST/images/test-sample-1000-seed-42/noisy", 0.98),
-        ("../data/MNIST/images/test-sample-1000-seed-42/noisy", 0.95),
-        ("../data/MNIST/images/test-sample-1000-seed-42/noisy", 0.90),
-        ("../data/MNIST/images/test-sample-1000-seed-42/bright", 0.98),
-        ("../data/MNIST/images/test-sample-1000-seed-42/bright", 0.95),
-        ("../data/MNIST/images/test-sample-1000-seed-42/bright", 0.90),
+        ("../data/test-sample-1000-seed-42/normal", 0.98),
+        ("../data/test-sample-1000-seed-42/normal", 0.95),
+        ("../data/test-sample-1000-seed-42/normal", 0.90),
+        ("../data/test-sample-1000-seed-42/noisy", 0.98),
+        ("../data/test-sample-1000-seed-42/noisy", 0.95),
+        ("../data/test-sample-1000-seed-42/noisy", 0.90),
+        ("../data/test-sample-1000-seed-42/bright", 0.98),
+        ("../data/test-sample-1000-seed-42/bright", 0.95),
+        ("../data/test-sample-1000-seed-42/bright", 0.90),
     ]
 )
 def test_acurracy_normal(test_set, accuracy):
