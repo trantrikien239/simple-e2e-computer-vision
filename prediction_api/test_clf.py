@@ -7,9 +7,7 @@ from PIL import Image
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from main import app_state, initialize_app_state
-from utils import ImageData, ImageDataBatch
-from utils import get_device, load_model, get_image_transform
-from utils import decode_image, classify_image
+from utils import classify_image
 
 app_state = asyncio.run(initialize_app_state())
 
