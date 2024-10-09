@@ -28,13 +28,14 @@ uvicorn prediction_api.main:app --reload
 
 1. Build the Docker image:
 ```bash
-docker build -t prediction-api .
+cd ..
+docker build -f prediction_api/Dockerfile -t prediction-api .
 ```
 
 2. Run the Docker container:
 
 ```bash
-docker run -p 80:80 prediction-api
+docker run -p 8000:8000 prediction-api
 ```
 
 ## API Endpoints

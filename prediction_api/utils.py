@@ -26,8 +26,7 @@ async def load_model(model_path, device):
     Returns:
         torch.nn.Module: The loaded model
     """
-    model = torch.jit.load(model_path)
-    model = model.to(device)
+    model = torch.jit.load(model_path, map_location=device)
     model.eval()
     return model
 

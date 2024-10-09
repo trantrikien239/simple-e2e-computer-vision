@@ -1,6 +1,7 @@
 wandb/
 data/MNIST/
 __pycache__/
+.pytest_cache/
 
 model_registry/*
 !model_registry/production/
