@@ -5,4 +5,4 @@ wandb==0.17.2
 fastapi==0.111.0
 streamlit==1.36.0
 scikit-learn==1.5.2
-uvicorn
+uvicorn==0.31.0

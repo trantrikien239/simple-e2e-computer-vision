@@ -1,0 +1,24 @@
+services:
+  prediction_api:
+    build: ./prediction_api
+    ports:
+      - 8000:8000
+    # volumes:
+    #   - ./model_registry:/app/model_registry
+    # environment:
+    #   - MODEL_PATH=/app/model_registry/production/scripted_model.pt
+    networks:
+      - e2e-network
+
+  ui_app:
+    build: ./ui_app
+    ports:
+      - 8501:8501
+    environment:
+      - API_URL=http://prediction_api:8000
+    networks:
+      - e2e-network
+  
+networks:
+  e2e-network:
+    driver: bridge
