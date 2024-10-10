@@ -1,3 +1,4 @@
+import os
 import requests
 import json
 import random
@@ -8,6 +9,7 @@ import base64
 import pandas as pd
 from sklearn.metrics import classification_report
 
+API_URL = os.environ.get('API_URL', 'http://localhost:8000')
 
 # Title
 st.title('MNIST Digit BATCH Classification')
@@ -29,7 +31,7 @@ if isinstance(uploaded_file, list):
     name_list_sample = [uf.name for uf in uploaded_file_sample]
     st.image(uploaded_file_sample, caption=name_list_sample, use_column_width=False)
     
-    url = "http://127.0.0.1:8000/predict_batch/"
+    url = f"{API_URL}/predict_batch/"
     headers = {
         "accept": "application/json",
         "Content-Type": "application/json",

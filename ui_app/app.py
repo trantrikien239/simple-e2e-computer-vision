@@ -3,11 +3,14 @@
 # - Call a POST API to get the classification of the image
 # - Display the uploaded image and the prediction
 
+import os
 import requests
 import json
 
 import streamlit as st
 import base64
+
+API_URL = os.environ.get('API_URL', 'http://localhost:8000')
 
 # Title
 st.title('MNIST Digit Classification')
@@ -21,7 +24,7 @@ if uploaded_file is not None:
     image_base64 = uploaded_file.getvalue()
     image_base64 = base64.b64encode(image_base64).decode('utf-8')
     
-    url = "http://127.0.0.1:8000/predict/"
+    url = f"{API_URL}/predict/"
     headers = {
         "accept": "application/json",
         "Content-Type": "application/json",

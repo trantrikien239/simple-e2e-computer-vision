@@ -13,3 +13,7 @@ This Streamlit app allows users to upload a PNG image, calls a POST API to class
 ```bash
 streamlit run app.py
 ```
+
+## Build with Docker
+
+The UI is dependent on the prediction api. For this reason, see ../README.md for multi-container application deployment.
