@@ -29,7 +29,9 @@ uvicorn prediction_api.main:app --reload
 1. Build the Docker image:
 ```bash
 cd ..
-docker build -f prediction_api/Dockerfile -t prediction-api .
+./copy_files.sh
+cd prediction_api
+docker build -f Dockerfile -t prediction-api .
 ```
 
 2. Run the Docker container:
@@ -39,8 +41,5 @@ docker run -p 8000:8000 prediction-api
 ```
 
 ## API Endpoints
-- `/predict`: POST endpoint that accepts input data and returns predictions from the pre-trained model.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE.md file for details
+- `/predict`: POST endpoint that accepts input data and returns prediction from the pre-trained model.
+- `/predict_batch`: POST endpoint that accepts a list of input images and return a list of predictions.
