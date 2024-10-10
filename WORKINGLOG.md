@@ -37,3 +37,6 @@ Today I worked on:
 - Training a new model with data with randomized data augmentation, which involved modifying the dataset classes and modify the training routine to allow evaluation on multiple test datasets. As a result, the model gained performance significantly on the noisy and brighten images.
 - Update the testcase and make data available in the repo so that CI/CD can be implemented later.
 - Embed W&B dashboard into the Streamlit UI
+
+## 20241010
+In the past few days, I've added support for deployment with multi-container docker applications
