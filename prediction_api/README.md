@@ -43,3 +43,22 @@ docker run -p 8000:8000 prediction-api
 ## API Endpoints
 - `/predict`: POST endpoint that accepts input data and returns prediction from the pre-trained model.
 - `/predict_batch`: POST endpoint that accepts a list of input images and return a list of predictions.
+
+## Heroku deployment
+### Set up - run these only once
+
+```bash
+heroku login
+# Set up the prediction API
+heroku create mnist-prediction-api
+heroku stack:set container -a mnist-prediction-api
+```
+
+### Deploy - run these every time there's a new version of the app
+
+```bash
+# Deploy the prediction API
+cd prediction_api
+heroku container:push web -a mnist-prediction-api
+heroku container:release web -a mnist-prediction-api
+```

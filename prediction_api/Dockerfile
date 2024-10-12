@@ -1,4 +1,5 @@
-FROM --platform=linux/arm64 python:3.11-slim
+FROM python:3.11-slim
+# FROM --platform=linux/arm64 python:3.11-slim # For arm64 deployment
 
 WORKDIR /app
 
@@ -13,4 +14,5 @@ ENV MODEL_PATH=/app/model_registry/latest/scripted_model.pt
 
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0"]
+# CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["python", "main.py"]
