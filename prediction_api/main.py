@@ -3,10 +3,14 @@ import time
 from fastapi import FastAPI, HTTPException, Request
 from contextlib import asynccontextmanager
 import asyncio
+import uvicorn
 
 from utils import ImageData, ImageDataBatch
 from utils import get_device, load_model, get_image_transform
 from utils import decode_image, classify_image
+
+PORT = int(os.environ.get("PORT", 8000))
+MODEL_PATH = os.environ.get("MODEL_PATH", "model.pth")
 
 class AppState:
     def __init__(self):
@@ -17,7 +21,7 @@ class AppState:
 
 async def initialize_app_state() -> AppState:
     # Get resources
-    app_state.model_path = os.environ.get("MODEL_PATH", "model.pth")
+    app_state.model_path = MODEL_PATH
     app_state.device = get_device()
     # Load model and image transform
     model_task = asyncio.create_task(
@@ -80,3 +84,6 @@ async def predict_batch(data: ImageDataBatch):
         return {"prediction": predictions}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+    
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=PORT)

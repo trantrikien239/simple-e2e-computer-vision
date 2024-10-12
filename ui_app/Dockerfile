@@ -1,4 +1,5 @@
-FROM --platform=linux/arm64 python:3.11-slim
+# FROM --platform=linux/arm64 python:3.11-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -10,4 +11,7 @@ COPY . .
 
 EXPOSE 8501
 
-CMD ["streamlit", "run", "app.py"]
+ENV PORT=8501
+
+# CMD ["streamlit", "run", "app.py"]
+CMD ["sh", "-c", "streamlit run app.py --server.port $PORT --server.address 0.0.0.0"]
